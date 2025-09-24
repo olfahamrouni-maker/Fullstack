@@ -54,16 +54,25 @@ public class ProjetService {
     }
 
    //LECTURE PROJET PAR ID
-    public Projet getProjetById(Long id) {
-        return projetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
-    }
+   public Projet getProjetById(Long id) {
+       Optional<Projet> existing = projetRepository.findById(id);
+
+       if (existing.isEmpty()) {
+           throw new RuntimeException("Projet non trouvé");
+       }
+
+       return existing.get();
+   }
+
 
     //MAJ PROJET
-    public Projet updateProjet(Projet upProjet) {
+    public Projet updateProjet(Long id, Projet upProjet) {
         // Vérifier si le projet existe
-        Projet existing = projetRepository.findById(upProjet.getId())
-                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
+        Optional<Projet> existingOpt = projetRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            throw new RuntimeException("Projet non trouvé");
+        }
+        Projet existing = existingOpt.get();
 
         // Vérification du nom
         if (upProjet.getNom() == null || upProjet.getNom().trim().isEmpty()) {
@@ -72,7 +81,7 @@ public class ProjetService {
 
         // Vérifier unicité du nom
         Optional<Projet> nomExist = projetRepository.findByNom(upProjet.getNom());
-        if (nomExist.isPresent() && !nomExist.get().getId().equals(upProjet.getId())) {
+        if (nomExist.isPresent() && !nomExist.get().getId().equals(id)) {
             throw new RuntimeException("Un projet avec ce nom existe déjà");
         }
 
@@ -96,8 +105,12 @@ public class ProjetService {
 
     //  SUPPRESSION PROJET
     public void deleteProjet(Long id) {
-        Projet existing = projetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
+        Optional<Projet> existing = projetRepository.findById(id);
+
+        if (existing.isEmpty()) {
+            throw new RuntimeException("Projet non trouvé");
+        }
+
         projetRepository.deleteById(id);
     }
 
