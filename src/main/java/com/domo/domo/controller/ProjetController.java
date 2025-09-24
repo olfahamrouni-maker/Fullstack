@@ -50,15 +50,16 @@ public class ProjetController {
     }
 
     //MAJ PROJET
-    @PutMapping
-    public ResponseEntity<?> updateProjet(@RequestBody Projet projet) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProjet(@PathVariable Long id, @RequestBody Projet projet) {
         try {
-            Projet updated = projetService.updateProjet(projet);
+            Projet updated = projetService.updateProjet(id, projet);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
     // SUPPRESSION PROJET
     @DeleteMapping("/{id}")
