@@ -90,7 +90,7 @@ public class DepartementController {
                     .body(e.getMessage());
         }
     }
-    
+
     //////////////////////////   6   //////////////////
     @GetMapping("/search")
     public ResponseEntity<?> searchDepartements(@RequestParam String keyword) {
