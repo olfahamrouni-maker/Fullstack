@@ -51,10 +51,10 @@ public class EmployeController {
     }
 
     // MAJ D'UN EMPLOYE
-    @PutMapping
-    public ResponseEntity<?> updateEmploye(@RequestBody Employe employe) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateEmploye(@PathVariable Long id, @RequestBody Employe employe) {
         try {
-            Employe updated = employeService.updateEmploye(employe);
+            Employe updated = employeService.updateEmploye(id, employe);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
