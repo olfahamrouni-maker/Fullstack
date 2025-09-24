@@ -58,15 +58,24 @@ public class EmployeService {
 
     // LECTURE D'UN EMPLOYE VIA SON ID
     public Employe getEmployeById(Long id) {
-        return employeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employé non trouvé"));
+        Optional<Employe> existingEmploye = employeRepository.findById(id);
+
+        if (existingEmploye.isEmpty()) {
+            throw new RuntimeException("Employé non trouvé");
+        }
+
+        return existingEmploye.get();
     }
 
+
     // MAJ D'UN EMPLOYE
-    public Employe updateEmploye(Employe upEmploye) {
+    public Employe updateEmploye(Long id, Employe upEmploye) {
         // Vérifier si l'employé existe
-        Employe existing = employeRepository.findById(upEmploye.getId())
-                .orElseThrow(() -> new RuntimeException("Employé non trouvé"));
+        Optional<Employe> existingOpt = employeRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            throw new RuntimeException("Employé non trouvé");
+        }
+        Employe existing = existingOpt.get();
 
         // Validation email
         String email = upEmploye.getEmail();
@@ -79,7 +88,7 @@ public class EmployeService {
 
         // Vérifier unicité de l'email
         Optional<Employe> emailExist = employeRepository.findByEmail(email);
-        if (emailExist.isPresent() && !emailExist.get().getId().equals(upEmploye.getId())) {
+        if (emailExist.isPresent() && !emailExist.get().getId().equals(id)) {
             throw new RuntimeException("Un employé avec cet email existe déjà");
         }
 
@@ -100,12 +109,18 @@ public class EmployeService {
     }
 
 
+
     // SUPPRESSION D'UN EMPLOYE
     public void deleteEmploye(Long id) {
-        Employe existing = employeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employé non trouvé"));
+        Optional<Employe> existing = employeRepository.findById(id);
+
+        if (existing.isEmpty()) {
+            throw new RuntimeException("Employé non trouvé");
+        }
+
         employeRepository.deleteById(id);
     }
+
 
     // RECHERCHE D'UN EMPLOYE VIA UN MOT CLE
     public List<Employe> searchEmployes(String keyword) {
