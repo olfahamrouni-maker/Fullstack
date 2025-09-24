@@ -58,7 +58,7 @@ public class DepartementService {
     }
 
     //////////////////////////   4 : SUPPRESSION DEPARTEMENT VIA ID    //////////////////
-        public void deleteDepartement(Long id) {
+    public void deleteDepartement(Long id) {
             Optional<Departement> departement = departementRepository.findById(id);
 
             if (departement.isEmpty()) {
@@ -70,7 +70,7 @@ public class DepartementService {
         }
 
         //////////////////////////   5 : MAJ DEPARTEMENT  //////////////////
-        public Departement updateDepartement(Long id, Departement upDepartement) {
+    public Departement updateDepartement(Long id, Departement upDepartement) {
             // Vérifier si le département existe par ID
             Optional<Departement> existingDept = departementRepository.findById(id);
             if (existingDept.isEmpty()) {
@@ -96,7 +96,7 @@ public class DepartementService {
             return departementRepository.save(existingDepartement);
         }
 
-        //////////////////////////   6  : RECHERCHE DEPARTEMENT PAR MOT CLE  //////////////////
+    //////////////////////////   6  : RECHERCHE DEPARTEMENT PAR MOT CLE  //////////////////
         public List<Departement> searchDepartements(String keyword) {
             List<Departement> resultats = departementRepository.findByNomContainingIgnoreCase(keyword);
 
