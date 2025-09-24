@@ -70,9 +70,9 @@ public class DepartementService {
         }
 
         //////////////////////////   5 : MAJ DEPARTEMENT  //////////////////
-        public Departement updateDepartement(Departement upDepartement) {
+        public Departement updateDepartement(Long id, Departement upDepartement) {
             // Vérifier si le département existe par ID
-            Optional<Departement> existingDept = departementRepository.findById(upDepartement.getId());
+            Optional<Departement> existingDept = departementRepository.findById(id);
             if (existingDept.isEmpty()) {
                 throw new RuntimeException("Département non trouvé");
             }
@@ -80,7 +80,7 @@ public class DepartementService {
 
             // Vérifier si le nom proposé existe déjà pour un autre département
             Optional<Departement> departement = departementRepository.findByNom(upDepartement.getNom());
-            if (departement.isPresent() && (!departement.get().getId().equals(upDepartement.getId()))) {
+            if (departement.isPresent() && (!departement.get().getId().equals(id))) {
                 throw new RuntimeException("Un département avec ce nom existe déjà");
             }
 
