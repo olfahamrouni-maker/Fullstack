@@ -51,10 +51,10 @@ public class EmployeController {
     }
 
     // MAJ D'UN EMPLOYE
-    @PutMapping
-    public ResponseEntity<?> updateEmploye(@RequestBody Employe employe) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateEmploye(@PathVariable Long id, @RequestBody Employe employe) {
         try {
-            Employe updated = employeService.updateEmploye(employe);
+            Employe updated = employeService.updateEmploye(id, employe);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -72,11 +72,22 @@ public class EmployeController {
         }
     }
 
-    // RECHERCHE D'UN EMPLOYE VIA UN MOT CLE
+    // RECHERCHE D'UN EMPLOYE VIA UN MOT CLE =  le nom seulement
     @GetMapping("/search")
     public ResponseEntity<?> searchEmployes(@RequestParam String keyword) {
         try {
             List<Employe> resultats = employeService.searchEmployes(keyword);
+            return ResponseEntity.ok(resultats);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    // Recherche d'employés par mot-clé: nom, prénom, email ou tel
+    @GetMapping("/search2")
+    public ResponseEntity<?> searchEmployes2(@RequestParam("keyword") String keyword) {
+        try {
+            List<Employe> resultats = employeService.searchEmployes2(keyword);
             return ResponseEntity.ok(resultats);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

@@ -1,7 +1,9 @@
 package com.domo.domo.service;
 
 import com.domo.domo.model.Employe;
+import com.domo.domo.model.Projet;
 import com.domo.domo.repository.EmployeRepository;
+import com.domo.domo.repository.ProjetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,9 @@ public class EmployeService {
 
     @Autowired
     private EmployeRepository employeRepository;
+
+    @Autowired
+    private ProjetRepository projetRepository;
 
     // CREATION EMPLOYE
     public Employe createEmploye(Employe employe) {
@@ -58,15 +63,24 @@ public class EmployeService {
 
     // LECTURE D'UN EMPLOYE VIA SON ID
     public Employe getEmployeById(Long id) {
-        return employeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employé non trouvé"));
+        Optional<Employe> existingEmploye = employeRepository.findById(id);
+
+        if (existingEmploye.isEmpty()) {
+            throw new RuntimeException("Employé non trouvé");
+        }
+
+        return existingEmploye.get();
     }
 
+
     // MAJ D'UN EMPLOYE
-    public Employe updateEmploye(Employe upEmploye) {
+    public Employe updateEmploye(Long id, Employe upEmploye) {
         // Vérifier si l'employé existe
-        Employe existing = employeRepository.findById(upEmploye.getId())
-                .orElseThrow(() -> new RuntimeException("Employé non trouvé"));
+        Optional<Employe> existingOpt = employeRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            throw new RuntimeException("Employé non trouvé");
+        }
+        Employe existing = existingOpt.get();
 
         // Validation email
         String email = upEmploye.getEmail();
@@ -79,7 +93,7 @@ public class EmployeService {
 
         // Vérifier unicité de l'email
         Optional<Employe> emailExist = employeRepository.findByEmail(email);
-        if (emailExist.isPresent() && !emailExist.get().getId().equals(upEmploye.getId())) {
+        if (emailExist.isPresent() && !emailExist.get().getId().equals(id)) {
             throw new RuntimeException("Un employé avec cet email existe déjà");
         }
 
@@ -99,15 +113,25 @@ public class EmployeService {
         return employeRepository.save(existing);
     }
 
-
     // SUPPRESSION D'UN EMPLOYE
     public void deleteEmploye(Long id) {
-        Employe existing = employeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employé non trouvé"));
+        Optional<Employe> existing = employeRepository.findById(id);
+
+        if (existing.isEmpty()) {
+            throw new RuntimeException("Employé non trouvé avec ID: " + id);
+        }
+
+        Employe employe = existing.get();
+
+        // Vérifier si l'employé est affecté à un ou plusieurs projets
+        if (employe.getProjets() != null && !employe.getProjets().isEmpty()) {
+            throw new RuntimeException("Impossible de supprimer l'employé (ID: " + id + ") car il est encore affecté à des projets");
+        }
+
         employeRepository.deleteById(id);
     }
 
-    // RECHERCHE D'UN EMPLOYE VIA UN MOT CLE
+    // RECHERCHE D'UN EMPLOYE VIA UN MOT CLE: le nom seulement
     public List<Employe> searchEmployes(String keyword) {
         List<Employe> resultats = employeRepository.findByNomContainingIgnoreCase(keyword);
         if (resultats.isEmpty()) {
@@ -115,4 +139,16 @@ public class EmployeService {
         }
         return resultats;
     }
+
+    // RECHERCHE D'UN EMPLOYE VIA UN MOT CLE: le nomou le prénom ou l'email ou le téléphone
+    public List<Employe> searchEmployes2(String keyword) {
+        List<Employe> resultats = employeRepository.searchByKeyword(keyword);
+
+        if (resultats.isEmpty()) {
+            throw new RuntimeException("Aucun employé trouvé pour le mot-clé: " + keyword);
+        }
+
+        return resultats;
+    }
+
 }

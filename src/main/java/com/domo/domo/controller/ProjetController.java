@@ -3,10 +3,12 @@ package com.domo.domo.controller;
 import com.domo.domo.model.Projet;
 import com.domo.domo.service.ProjetService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -50,15 +52,16 @@ public class ProjetController {
     }
 
     //MAJ PROJET
-    @PutMapping
-    public ResponseEntity<?> updateProjet(@RequestBody Projet projet) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProjet(@PathVariable Long id, @RequestBody Projet projet) {
         try {
-            Projet updated = projetService.updateProjet(projet);
+            Projet updated = projetService.updateProjet(id, projet);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
     // SUPPRESSION PROJET
     @DeleteMapping("/{id}")
@@ -77,6 +80,19 @@ public class ProjetController {
         try {
             List<Projet> resultats = projetService.searchProjets(keyword);
             return ResponseEntity.ok(resultats);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    // Rechercher projets par période
+    @GetMapping("/rechercher")
+    public ResponseEntity<?> rechercherProjetsParPeriode(
+            @RequestParam("debut") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate debut,
+            @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+        try {
+            List<Projet> projets = projetService.rechercherProjetsParPeriode(debut, fin);
+            return ResponseEntity.ok(projets);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }

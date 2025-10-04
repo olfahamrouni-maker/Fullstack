@@ -15,7 +15,6 @@ import java.util.Optional;
 public class DepartementController {
     @Autowired
     private DepartementService departementService;
-
     //////////////////////////   1   //////////////////
     @PostMapping
     public ResponseEntity<?> createDepartement(@RequestBody Departement departement) {
@@ -73,13 +72,12 @@ public class DepartementController {
                     .body(e.getMessage());
         }
     }
-
     //////////////////////////   5   //////////////////
-    @PutMapping
-    public ResponseEntity<?> updateDepartement(@RequestBody Departement upDepartement) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateDepartement(@PathVariable Long id, @RequestBody Departement upDepartement) {
         try {
             // Appel du service pour mettre à jour le département
-            Departement updatedDept = departementService.updateDepartement(upDepartement);
+            Departement updatedDept = departementService.updateDepartement(id, upDepartement);
 
             // Retourne HTTP 200 OK + département mis à jour
             return ResponseEntity.ok(updatedDept);
@@ -90,8 +88,6 @@ public class DepartementController {
                     .body(e.getMessage());
         }
     }
-
-
     //////////////////////////   6   //////////////////
     @GetMapping("/search")
     public ResponseEntity<?> searchDepartements(@RequestParam String keyword) {
@@ -107,4 +103,5 @@ public class DepartementController {
         }
     }
 }
+
 

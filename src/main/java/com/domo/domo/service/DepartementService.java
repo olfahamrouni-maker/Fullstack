@@ -58,21 +58,31 @@ public class DepartementService {
     }
 
     //////////////////////////   4 : SUPPRESSION DEPARTEMENT VIA ID    //////////////////
-        public void deleteDepartement(Long id) {
-            Optional<Departement> departement = departementRepository.findById(id);
+    public void deleteDepartement(Long id) {
+        Optional<Departement> optionalDepartement = departementRepository.findById(id);
 
-            if (departement.isEmpty()) {
-                throw new RuntimeException("Département non trouvé");
-            }
-
-            // Supprimer le département
-            departementRepository.deleteById(id);
+        if (optionalDepartement.isEmpty()) {
+            throw new RuntimeException("Département non trouvé avec ID: " + id);
         }
 
-        //////////////////////////   5 : MAJ DEPARTEMENT  //////////////////
-        public Departement updateDepartement(Departement upDepartement) {
+        Departement departement = optionalDepartement.get();
+
+        // Vérifier si le département a encore des projets
+        if (departement.getProjets() != null && !departement.getProjets().isEmpty()) {
+            throw new RuntimeException(
+                    "Impossible de supprimer le département (ID: " + id + ") car il lance encore des projets"
+            );
+        }
+
+        // Supprimer le département
+        departementRepository.deleteById(id);
+    }
+
+
+    //////////////////////////   5 : MAJ DEPARTEMENT  //////////////////
+    public Departement updateDepartement(Long id, Departement upDepartement) {
             // Vérifier si le département existe par ID
-            Optional<Departement> existingDept = departementRepository.findById(upDepartement.getId());
+            Optional<Departement> existingDept = departementRepository.findById(id);
             if (existingDept.isEmpty()) {
                 throw new RuntimeException("Département non trouvé");
             }
@@ -80,7 +90,7 @@ public class DepartementService {
 
             // Vérifier si le nom proposé existe déjà pour un autre département
             Optional<Departement> departement = departementRepository.findByNom(upDepartement.getNom());
-            if (departement.isPresent() && (!departement.get().getId().equals(upDepartement.getId()))) {
+            if (departement.isPresent() && (!departement.get().getId().equals(id))) {
                 throw new RuntimeException("Un département avec ce nom existe déjà");
             }
 
@@ -96,8 +106,8 @@ public class DepartementService {
             return departementRepository.save(existingDepartement);
         }
 
-        //////////////////////////   6  : RECHERCHE DEPARTEMENT PAR MOT CLE  //////////////////
-        public List<Departement> searchDepartements(String keyword) {
+    //////////////////////////   6  : RECHERCHE DEPARTEMENT PAR MOT CLE  //////////////////
+    public List<Departement> searchDepartements(String keyword) {
             List<Departement> resultats = departementRepository.findByNomContainingIgnoreCase(keyword);
 
             if (resultats.isEmpty()) {
@@ -106,6 +116,6 @@ public class DepartementService {
 
             return resultats;
         }
-
-
 }
+
+

@@ -1,10 +1,14 @@
 package com.domo.domo.service;
 
+import com.domo.domo.model.Departement;
+import com.domo.domo.model.Employe;
 import com.domo.domo.model.Projet;
+import com.domo.domo.repository.DepartementRepository;
 import com.domo.domo.repository.ProjetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +17,8 @@ public class ProjetService {
 
     @Autowired
     private ProjetRepository projetRepository;
+    @Autowired
+    private DepartementRepository departementRepository;
 
     // CREATION PROJET
     public Projet createProjet(Projet projet) {
@@ -54,16 +60,25 @@ public class ProjetService {
     }
 
    //LECTURE PROJET PAR ID
-    public Projet getProjetById(Long id) {
-        return projetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
-    }
+   public Projet getProjetById(Long id) {
+       Optional<Projet> existing = projetRepository.findById(id);
+
+       if (existing.isEmpty()) {
+           throw new RuntimeException("Projet non trouvé");
+       }
+
+       return existing.get();
+   }
+
 
     //MAJ PROJET
-    public Projet updateProjet(Projet upProjet) {
+    public Projet updateProjet(Long id, Projet upProjet) {
         // Vérifier si le projet existe
-        Projet existing = projetRepository.findById(upProjet.getId())
-                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
+        Optional<Projet> existingOpt = projetRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            throw new RuntimeException("Projet non trouvé");
+        }
+        Projet existing = existingOpt.get();
 
         // Vérification du nom
         if (upProjet.getNom() == null || upProjet.getNom().trim().isEmpty()) {
@@ -72,7 +87,7 @@ public class ProjetService {
 
         // Vérifier unicité du nom
         Optional<Projet> nomExist = projetRepository.findByNom(upProjet.getNom());
-        if (nomExist.isPresent() && !nomExist.get().getId().equals(upProjet.getId())) {
+        if (nomExist.isPresent() && !nomExist.get().getId().equals(id)) {
             throw new RuntimeException("Un projet avec ce nom existe déjà");
         }
 
@@ -96,10 +111,31 @@ public class ProjetService {
 
     //  SUPPRESSION PROJET
     public void deleteProjet(Long id) {
-        Projet existing = projetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
+        Optional<Projet> optionalProjet = projetRepository.findById(id);
+
+        if (optionalProjet.isEmpty()) {
+            throw new RuntimeException("Projet non trouvé avec ID: " + id);
+        }
+
+        Projet projet = optionalProjet.get();
+
+        // Retirer le projet de tous les employés
+        if (projet.getEmployes() != null) {
+            for (Employe employe : projet.getEmployes()) {
+                employe.getProjets().remove(projet);
+            }
+        }
+
+        // Retirer le projet du département
+        Departement departement = projet.getDepartement();
+        if (departement != null && departement.getProjets() != null) {
+            departement.getProjets().remove(projet);
+        }
+
+        // Supprimer le projet
         projetRepository.deleteById(id);
     }
+
 
     // RECHERCHE PROJET PAR MOT CLE
     public List<Projet> searchProjets(String keyword) {
@@ -109,4 +145,17 @@ public class ProjetService {
         }
         return resultats;
     }
+
+    // RECHERCHE PROJET PAR DATE
+    public List<Projet> rechercherProjetsParPeriode(LocalDate debut, LocalDate fin) {
+        if (debut.isAfter(fin)) {
+            throw new RuntimeException("La date de début doit être avant la date de fin");
+        }
+        List<Projet> projets = projetRepository.findByDateDebutBetween(debut, fin);
+        if (projets.isEmpty()) {
+            throw new RuntimeException("Aucun projet trouvé pour cette période");
+        }
+        return projets;
+    }
+
 }

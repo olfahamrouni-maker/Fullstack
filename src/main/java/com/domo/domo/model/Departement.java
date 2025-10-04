@@ -1,9 +1,11 @@
 package com.domo.domo.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 //@Data
@@ -13,8 +15,12 @@ public class Departement {
     private Long id;
     private String nom;
 
-    //les getters et les setters
+    // Relation OneToMany avec Projet
+    @OneToMany(mappedBy = "departement")
+    @JsonIgnore
+    private List<Projet> projets = new ArrayList<>();
 
+    //les getters et les setters
     public Long getId() {
         return id;
     }
@@ -23,8 +29,12 @@ public class Departement {
         return nom;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public List<Projet> getProjets() {
+        return projets;
+    }
+
+    public void setProjets(ArrayList<Projet> projets) {
+        this.projets = projets;
     }
 
     public void setNom(String nom) {
