@@ -1,0 +1,36 @@
+/* You can add global styles to this file, and also import other style files */
+/* You can add global styles to this file, and also import other style files */
+/*Style pour app.component.html*/
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* toute la hauteur de la fenêtre */
+  overflow: hidden; /* supprime le scroll vertical global */
+}
+
+/* Header et Footer en pourcentage de la hauteur de la fenêtre */
+app-header {
+  height: 10vh;
+  flex-shrink: 0;
+}
+
+app-footer {
+  height: 7vh;
+  flex-shrink: 0;
+}
+
+/* Contenu dynamique prend le reste */
+main {
+  flex: 1;               /* occupe tout l’espace restant */
+  overflow-y: auto;      /* scroll uniquement si contenu trop grand */
+  padding: 0.5rem;       /* petit espace intérieur si nécessaire */
+  box-sizing: border-box; /* inclut le padding dans la hauteur */
+}
+
+
