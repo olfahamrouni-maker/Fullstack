@@ -1,10 +1,23 @@
 <div class="container mt-4">
   <h3 class="text-center">Liste des départements</h3>
-    <div class="text-end mt-3">
-    <button class="btn btn-success">
-        <i class="bi bi-plus"></i>
+
+<div class="row mt-3">
+  <div class="col-md-11">
+    <input 
+      type="text"
+      class="form-control"
+      placeholder="Rechercher un département..."
+      [(ngModel)]="keyword"
+      (input)="filterDepartements()"
+    >
+  </div>
+
+  <div class="col-md-1 text-end">
+    <button class="btn btn-success" (click)="openAddModal()">
+      <i class="bi bi-plus"></i>
     </button>
-    </div>
+  </div>
+</div>
 
   @if(errorMessage){
   <div class="alert alert-danger text-center">{{ errorMessage }}</div>
@@ -19,23 +32,26 @@
       </tr>
     </thead>
     <tbody>
-        @for (dep of departements | paginate: { itemsPerPage: 5, currentPage: p }; track $index){
+        @for (dep of departements  | paginate: { itemsPerPage: 5, currentPage: p }; track $index){
             <tr>
                 <td>{{ dep.id }}</td>
                 <td>{{ dep.nom }}</td>
                 <td class="text-center">
                 <!-- Éditer -->
-                <button class="btn btn-sm btn-outline-primary me-2" title="Éditer">
+                <button class="btn btn-sm btn-outline-primary me-2" title="Éditer"
+                  (click)="openEditModal(dep)">
                     <i class="bi bi-pencil"></i>
                 </button>
 
                 <!-- Supprimer -->
-                <button class="btn btn-sm btn-outline-danger me-2" title="Supprimer">
+                <button class="btn btn-sm btn-outline-danger me-2" title="Supprimer"
+                  (click)="openDeleteModal(dep.id)">
                     <i class="bi bi-trash"></i>
                 </button>
 
                 <!-- Liste / Voir employés -->
-                <button class="btn btn-sm btn-outline-info" title="Voir la liste">
+                <button class="btn btn-sm btn-outline-info" title="Voir la liste"
+                    (click)="openListingProjetsModal(dep)">
                     <i class="bi bi-list"></i>
                 </button>
                 </td>
@@ -52,6 +68,157 @@
   }
 </div>
 
+<!-- Modal d'ajout de département -->
+<div class="modal fade" id="addDepartementModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDepartementLabel">Ajouter un département</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+
+      <div class="modal-body">
+        @if(errorMessageModal){
+        <div class="alert alert-danger">
+          {{ errorMessageModal }}
+        </div>
+        }
+        <form #addForm="ngForm" (ngSubmit)="onSubmit(addForm)">
+          <div class="mb-3">
+            <label for="nom" class="form-label">Nom du département</label>
+            <input 
+              type="text" 
+              id="nom" 
+              name="nom" 
+              class="form-control" 
+              [(ngModel)]="nomDep" 
+              required>
+          </div>
+
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="deleteDepartementModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        @if(errorMessageModal){
+        <div class="alert alert-danger">
+          {{ errorMessageModal }}
+        </div>
+        }
+        <p>Voulez-vous supprimer le département {{selectedId}}?</p>
+      </div>
+
+      <div class="modal-footer">
+          <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Éditer Département -->
+<div class="modal fade" id="editDepartementModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Modifier le département</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- message d'erreur -->
+         @if (errorMessageModal){
+        <div class="alert alert-danger py-2">
+          {{ errorMessageModal }}
+        </div>
+        }
+        <div class="mb-3">
+          @if(editDep){
+          <label class="form-label">Nom du département</label>
+          <input 
+            type="text" 
+            class="form-control"
+            [(ngModel)]="editDep.nom"
+            name="editNomDep"
+          >
+          }
+        </div>
+      </div>
+
+      <div class="modal-footer">
+         <button class="btn btn-primary" (click)="confirmEdit()">
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal lister projets pour un Département -->
+<div class="modal fade" id="listingProjetsByDepartementModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header bg-primary text-white">
+        @if(selectedDepartement){
+        <h5 class="modal-title">Liste projets du département {{selectedDepartement.nom}}</h5>
+        }
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- message d'erreur -->
+         @if (projets.length==0){
+        <div class="alert alert-danger py-2">
+          Aucun projet lancé par le département.
+        </div>
+        }
+        @else {
+        <div class="mb-3">
+         <!-- Tableau des projets -->
+        <table class="table table-striped table-bordered">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Date début</th>
+              <th>Date fin</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of projets ; track $index){
+            <tr>
+              <td>{{ p.id }}</td>
+              <td>{{ p.nom }}</td>
+              <td>{{ p.dateDebut | date:'yyyy-MM-dd' }}</td>
+              <td>{{ p.dateFin | date:'yyyy-MM-dd' }}</td>
+            </tr>
+          }
+          </tbody>
+        </table>
+        </div>
+      }
+      </div>    
+    </div>
+  </div>
+</div>
 
 
 

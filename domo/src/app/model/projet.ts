@@ -3,8 +3,7 @@ import { Employe } from "./employe";
 
 export interface Projet {
     id: number;
-    titre: string;
-    description: string;
+    nom: string;
     dateDebut: Date;
     dateFin: Date;
     departement: Departement;   
