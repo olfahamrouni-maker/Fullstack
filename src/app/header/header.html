@@ -1,0 +1,53 @@
+<header class="bg-black text-white p-2">
+  <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center">
+    <!-- Titre -->
+    <div class="mb-2 mb-sm-0">
+      <h1 class="h5 m-0">Gestion Projets - DOMO -</h1>
+    </div>
+
+    <!-- Menu -->
+    <nav>
+      <ul class="list-unstyled d-flex flex-column flex-sm-row mb-0">
+        <li class="mb-1 mb-sm-0 ms-sm-3">
+          <a routerLink="/home" routerLinkActive="active" class="text-white text-decoration-none">
+            Home
+          </a>
+        </li>
+        @if(auth.isLoggedIn() && auth.getRole() == 'ROLE_ADMIN'){
+        <li class="mb-1 mb-sm-0 ms-sm-3">
+          <a routerLink="/departements" routerLinkActive="active" class="text-white text-decoration-none">
+            Gestion départements
+          </a>
+        </li>
+      
+        <li class="mb-1 mb-sm-0 ms-sm-3">
+          <a routerLink="/employes" routerLinkActive="active" class="text-white text-decoration-none">
+            Gestion employés
+          </a>
+        </li>
+      }
+      @if(auth.isLoggedIn() && auth.getRole() == 'ROLE_RESPONSABLE_PROJET'){
+        <li class="ms-sm-3">
+          <a routerLink="/projets" routerLinkActive="active" class="text-white text-decoration-none">
+            Gestion projets
+          </a>
+        </li> 
+      }   
+      </ul>
+    </nav>
+    @if(auth.isLoggedIn()){
+    <!--  Ajout : username + rôle alignés à droite -->
+      <div class="ms-4 d-flex align-items-center text-end">
+        <div class="me-3">
+          
+        <span class="fw-bold text-white">{{ auth.getUsername() }}</span> | 
+        <small class="text-white ms-1">{{ auth.getRole() }}</small>
+      </div>
+    
+        <!-- Bouton logout -->
+        <button class="btn btn-sm btn-outline-light" (click)="auth.logout()">Logout</button>
+      </div>
+      }
+  </div>
+</header>
+
